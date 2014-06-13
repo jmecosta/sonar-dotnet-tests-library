@@ -87,7 +87,7 @@ public class OpenCoverReportParser implements CoverageParser {
       try {
         files.put(uid, new File(fullPath).getCanonicalPath());
       } catch (IOException e) {
-        throw Throwables.propagate(e);
+        LOG.error("Cannot Get Canonical Path for " + fullPath + " with uid: " + uid + " : ignore measures");
       }
     }
 
