@@ -21,10 +21,12 @@ package org.sonar.plugins.dotnet.tests;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
+import java.io.File;
+import org.apache.tools.ant.DirectoryScanner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonar.api.BatchExtension;
 import org.sonar.api.config.Settings;
-
-import java.io.File;
 
 public class CoverageAggregator implements BatchExtension {
 
@@ -34,6 +36,8 @@ public class CoverageAggregator implements BatchExtension {
   private final OpenCoverReportParser openCoverReportParser;
   private final DotCoverReportsAggregator dotCoverReportsAggregator;
   private final VisualStudioCoverageXmlReportParser visualStudioCoverageXmlReportParser;
+  
+  private static final Logger LOG = LoggerFactory.getLogger(CoverageAggregator.class);
 
   public CoverageAggregator(CoverageConfiguration coverageConf, Settings settings) {
     this(coverageConf, settings,
@@ -75,30 +79,39 @@ public class CoverageAggregator implements BatchExtension {
     return settings.hasKey(coverageConf.visualStudioCoverageXmlPropertyKey());
   }
 
-  public Coverage aggregate(Coverage coverage) {
+  public Coverage aggregate(Coverage coverage, DirectoryScanner scanner) {
+    
     if (hasNCover3ReportPaths()) {
-      aggregate(settings.getString(coverageConf.ncover3PropertyKey()), ncover3ReportParser, coverage);
+      aggregate(settings.getString(coverageConf.ncover3PropertyKey()), ncover3ReportParser, coverage, scanner);
     }
 
     if (hasOpenCoverReportPaths()) {
-      aggregate(settings.getString(coverageConf.openCoverPropertyKey()), openCoverReportParser, coverage);
+      aggregate(settings.getString(coverageConf.openCoverPropertyKey()), openCoverReportParser, coverage, scanner);
     }
 
     if (hasDotCoverReportPaths()) {
-      aggregate(settings.getString(coverageConf.dotCoverPropertyKey()), dotCoverReportsAggregator, coverage);
+      aggregate(settings.getString(coverageConf.dotCoverPropertyKey()), dotCoverReportsAggregator, coverage, scanner);
     }
 
     if (hasVisualStudioCoverageXmlReportPaths()) {
-      aggregate(settings.getString(coverageConf.visualStudioCoverageXmlPropertyKey()), visualStudioCoverageXmlReportParser, coverage);
+      aggregate(settings.getString(coverageConf.visualStudioCoverageXmlPropertyKey()), visualStudioCoverageXmlReportParser, coverage, scanner);
     }
 
     return coverage;
   }
 
-  private static void aggregate(String reportPaths, CoverageParser parser, Coverage coverage) {
-    for (String reportPath : Splitter.on(',').trimResults().omitEmptyStrings().split(reportPaths)) {
-      parser.parse(new File(reportPath), coverage);
+  private static void aggregate(String reportPaths, CoverageParser parser, Coverage coverage, DirectoryScanner scanner) {
+    for (String reportPath : Splitter.on(',').trimResults().omitEmptyStrings().split(reportPaths)) {        
+        scanner.setIncludes(new String[]{reportPath});
+        scanner.setBasedir(".");
+        scanner.setCaseSensitive(false);
+        scanner.scan();        
+        String[] files = scanner.getIncludedFiles();
+        if(files != null) {
+            for (String file : files) {
+                parser.parse(new File(file), coverage);  
+            }                          
+        }
     }
   }
-
 }
