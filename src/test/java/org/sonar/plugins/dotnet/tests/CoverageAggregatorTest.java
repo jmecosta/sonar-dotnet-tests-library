@@ -19,18 +19,20 @@
  */
 package org.sonar.plugins.dotnet.tests;
 
+import java.io.File;
+import org.apache.tools.ant.DirectoryScanner;
+import static org.fest.assertions.Assertions.assertThat;
+
+import static org.fest.assertions.Assertions.assertThat;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
-import org.sonar.api.config.Settings;
-
-import java.io.File;
-
-import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.sonar.api.config.Settings;
 
 public class CoverageAggregatorTest {
 
@@ -91,12 +93,18 @@ public class CoverageAggregatorTest {
     when(settings.hasKey("opencover")).thenReturn(false);
     when(settings.hasKey("dotcover")).thenReturn(false);
     when(settings.hasKey("visualstudio")).thenReturn(false);
+
     NCover3ReportParser ncoverParser = mock(NCover3ReportParser.class);
     OpenCoverReportParser openCoverParser = mock(OpenCoverReportParser.class);
     DotCoverReportsAggregator dotCoverParser = mock(DotCoverReportsAggregator.class);
     VisualStudioCoverageXmlReportParser visualStudioCoverageXmlReportParser = mock(VisualStudioCoverageXmlReportParser.class);
     Coverage coverage = mock(Coverage.class);
-    new CoverageAggregator(coverageConf, settings, ncoverParser, openCoverParser, dotCoverParser, visualStudioCoverageXmlReportParser).aggregate(coverage);
+    
+    DirectoryScanner scanner = mock(DirectoryScanner.class);
+    String files[] = {"foo.nccov"};
+    when(scanner.getIncludedFiles()).thenReturn(files);
+    
+    new CoverageAggregator(coverageConf, settings, ncoverParser, openCoverParser, dotCoverParser, visualStudioCoverageXmlReportParser).aggregate(coverage, scanner);
     verify(ncoverParser).parse(new File("foo.nccov"), coverage);
     verify(openCoverParser, Mockito.never()).parse(Mockito.any(File.class), Mockito.any(Coverage.class));
     verify(dotCoverParser, Mockito.never()).parse(Mockito.any(File.class), Mockito.any(Coverage.class));
@@ -112,7 +120,12 @@ public class CoverageAggregatorTest {
     dotCoverParser = mock(DotCoverReportsAggregator.class);
     visualStudioCoverageXmlReportParser = mock(VisualStudioCoverageXmlReportParser.class);
     coverage = mock(Coverage.class);
-    new CoverageAggregator(coverageConf, settings, ncoverParser, openCoverParser, dotCoverParser, visualStudioCoverageXmlReportParser).aggregate(coverage);
+
+    DirectoryScanner scannerOp = mock(DirectoryScanner.class);
+    String files2[] = {"bar.xml"};
+    when(scannerOp.getIncludedFiles()).thenReturn(files2);
+    
+    new CoverageAggregator(coverageConf, settings, ncoverParser, openCoverParser, dotCoverParser, visualStudioCoverageXmlReportParser).aggregate(coverage, scannerOp);
     verify(ncoverParser, Mockito.never()).parse(Mockito.any(File.class), Mockito.any(Coverage.class));
     verify(openCoverParser).parse(new File("bar.xml"), coverage);
     verify(dotCoverParser, Mockito.never()).parse(Mockito.any(File.class), Mockito.any(Coverage.class));
@@ -128,7 +141,12 @@ public class CoverageAggregatorTest {
     dotCoverParser = mock(DotCoverReportsAggregator.class);
     visualStudioCoverageXmlReportParser = mock(VisualStudioCoverageXmlReportParser.class);
     coverage = mock(Coverage.class);
-    new CoverageAggregator(coverageConf, settings, ncoverParser, openCoverParser, dotCoverParser, visualStudioCoverageXmlReportParser).aggregate(coverage);
+    
+    DirectoryScanner scannerDotCover = mock(DirectoryScanner.class);
+    String files3[] = {"baz.html"};
+    when(scannerDotCover.getIncludedFiles()).thenReturn(files3);
+    
+    new CoverageAggregator(coverageConf, settings, ncoverParser, openCoverParser, dotCoverParser, visualStudioCoverageXmlReportParser).aggregate(coverage, scannerDotCover);
     verify(ncoverParser, Mockito.never()).parse(Mockito.any(File.class), Mockito.any(Coverage.class));
     verify(openCoverParser, Mockito.never()).parse(Mockito.any(File.class), Mockito.any(Coverage.class));
     verify(dotCoverParser).parse(new File("baz.html"), coverage);
@@ -144,7 +162,12 @@ public class CoverageAggregatorTest {
     dotCoverParser = mock(DotCoverReportsAggregator.class);
     visualStudioCoverageXmlReportParser = mock(VisualStudioCoverageXmlReportParser.class);
     coverage = mock(Coverage.class);
-    new CoverageAggregator(coverageConf, settings, ncoverParser, openCoverParser, dotCoverParser, visualStudioCoverageXmlReportParser).aggregate(coverage);
+    
+    DirectoryScanner scannerVS = mock(DirectoryScanner.class);
+    String files4[] = {"qux.coveragexml"};
+    when(scannerVS.getIncludedFiles()).thenReturn(files4);
+    
+    new CoverageAggregator(coverageConf, settings, ncoverParser, openCoverParser, dotCoverParser, visualStudioCoverageXmlReportParser).aggregate(coverage, scannerVS);
     verify(ncoverParser, Mockito.never()).parse(Mockito.any(File.class), Mockito.any(Coverage.class));
     verify(openCoverParser, Mockito.never()).parse(Mockito.any(File.class), Mockito.any(Coverage.class));
     verify(dotCoverParser, Mockito.never()).parse(Mockito.any(File.class), Mockito.any(Coverage.class));
@@ -163,7 +186,16 @@ public class CoverageAggregatorTest {
     dotCoverParser = mock(DotCoverReportsAggregator.class);
     visualStudioCoverageXmlReportParser = mock(VisualStudioCoverageXmlReportParser.class);
     coverage = mock(Coverage.class);
-    new CoverageAggregator(coverageConf, settings, ncoverParser, openCoverParser, dotCoverParser, visualStudioCoverageXmlReportParser).aggregate(coverage);
+
+    DirectoryScanner scannerCombined = mock(DirectoryScanner.class);
+    String call1[] = {"foo.nccov"};
+    String call2[] = {"bar.nccov"};
+    String call3[] = {"bar.xml"};
+    String call4[] = {"baz.html"};
+    String call5[] = {"qux.coveragexml"};
+    when(scannerCombined.getIncludedFiles()).thenReturn(call1).thenReturn(call2).thenReturn(call3).thenReturn(call4).thenReturn(call5);
+    
+    new CoverageAggregator(coverageConf, settings, ncoverParser, openCoverParser, dotCoverParser, visualStudioCoverageXmlReportParser).aggregate(coverage, scannerCombined);
     verify(ncoverParser).parse(new File("foo.nccov"), coverage);
     verify(ncoverParser).parse(new File("bar.nccov"), coverage);
     verify(openCoverParser).parse(new File("bar.xml"), coverage);

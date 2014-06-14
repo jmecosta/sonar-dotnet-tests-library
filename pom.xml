@@ -91,6 +91,12 @@
       <scope>test</scope>
       <version>1.9.0</version>
     </dependency>
+    <dependency>
+      <groupId>ant</groupId>
+      <artifactId>ant</artifactId>
+      <version>1.6</version>
+      <type>jar</type>
+    </dependency>
   </dependencies>
 
   <build>
