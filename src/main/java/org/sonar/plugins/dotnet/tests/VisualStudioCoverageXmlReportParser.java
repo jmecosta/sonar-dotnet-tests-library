@@ -87,12 +87,12 @@ public class VisualStudioCoverageXmlReportParser implements CoverageParser {
 
       int line = xmlParserHelper.getRequiredIntAttribute("start_line");
 
-      if ("yes".equals(covered)) {
+      if ("yes".equals(covered) || "partial".equals(covered)) {
         coveredLines.put(source, line);
       } else if ("no".equals(covered)) {
         uncoveredLines.put(source, line);
       } else {
-        throw xmlParserHelper.parseError("Unsupported \"covered\" value \"" + covered + "\", expected either \"yes\" or \"no\"");
+        throw xmlParserHelper.parseError("Unsupported \"covered\" value \"" + covered + "\", expected one of \"yes\", \"partial\" or \"no\"");
       }
     }
 

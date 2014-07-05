@@ -51,7 +51,7 @@ public class VisualStudioCoverageXmlReportParserTest {
   @Test
   public void wrong_covered() {
     thrown.expect(RuntimeException.class);
-    thrown.expectMessage("Unsupported \"covered\" value \"foo\", expected either \"yes\" or \"no\"");
+    thrown.expectMessage("Unsupported \"covered\" value \"foo\", expected one of \"yes\", \"partial\" or \"no\"");
     thrown.expectMessage("wrong_covered.coveragexml");
     thrown.expectMessage("line 40");
     new VisualStudioCoverageXmlReportParser().parse(new File("src/test/resources/visualstudio_coverage_xml/wrong_covered.coveragexml"), mock(Coverage.class));

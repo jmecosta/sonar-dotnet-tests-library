@@ -10,7 +10,7 @@
 
   <groupId>org.codehaus.sonar.dotnet.tests</groupId>
   <artifactId>sonar-dotnet-tests-library</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.2-SNAPSHOT</version>
 
   <name>SonarQube .NET Tests Library</name>
   <description />
@@ -43,7 +43,7 @@
   </scm>
   <issueManagement>
     <system>JIRA</system>
-    <url>http://jira.codehaus.org/browse/SONARPLUGINS/component/16450</url>
+    <url>https://jira.codehaus.org/browse/SONARNTEST</url>
   </issueManagement>
   <distributionManagement>
     <repository>

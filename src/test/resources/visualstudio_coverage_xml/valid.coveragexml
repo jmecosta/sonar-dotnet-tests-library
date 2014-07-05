@@ -28,7 +28,7 @@
         <function id="8296" token="0x6000002" name="Multiply(int, int)" type_name="Calc" block_coverage="100.00" line_coverage="100.00" blocks_covered="2" blocks_not_covered="0" lines_covered="3" lines_partially_covered="0" lines_not_covered="0">
           <ranges>
             <range source_id="0" covered="yes" start_line="17" start_column="9" end_line="17" end_column="10" />
-            <range source_id="0" covered="yes" start_line="18" start_column="13" end_line="18" end_column="33" />
+            <range source_id="0" covered="partial" start_line="18" start_column="13" end_line="18" end_column="33" />
             <range source_id="0" covered="yes" start_line="19" start_column="9" end_line="19" end_column="10" />
           </ranges>
         </function>
