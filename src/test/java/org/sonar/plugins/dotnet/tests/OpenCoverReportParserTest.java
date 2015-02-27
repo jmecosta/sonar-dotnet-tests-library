@@ -97,4 +97,9 @@ public class OpenCoverReportParserTest {
         MapAssert.entry(13, 0));
   }
 
+  @Test
+  public void should_not_fail_with_invalid_path() {
+    new OpenCoverReportParser().parse(new File("src/test/resources/opencover/invalid_path.xml"), mock(Coverage.class));
+  }
+
 }

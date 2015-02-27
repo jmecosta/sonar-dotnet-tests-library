@@ -21,18 +21,9 @@ package org.sonar.plugins.dotnet.tests;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import java.util.List;
-import org.apache.tools.ant.DirectoryScanner;
-import static org.fest.assertions.Assertions.assertThat;
-
-import static org.fest.assertions.Assertions.assertThat;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import static org.mockito.Matchers.anyObject;
 import org.mockito.Mockito;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import org.sonar.api.batch.SensorContext;
 import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.measures.Measure;
@@ -40,6 +31,13 @@ import org.sonar.api.measures.Metric;
 import org.sonar.api.resources.Language;
 import org.sonar.api.resources.Project;
 import org.sonar.api.resources.Resource;
+
+import java.util.List;
+
+import static org.fest.assertions.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class CoverageReportImportSensorTest {
 
@@ -88,8 +86,8 @@ public class CoverageReportImportSensorTest {
     CoverageConfiguration coverageConf = new CoverageConfiguration("cs", "", "", "", "");
 
     new CoverageReportImportSensor(coverageConf, coverageAggregator).analyze(context, fileProvider, coverage);
-           
-    verify(coverageAggregator).aggregate(Mockito.any(Coverage.class), Mockito.any(DirectoryScanner.class));
+
+    verify(coverageAggregator).aggregate(Mockito.any(WildcardPatternFileProvider.class), Mockito.eq(coverage));
     verify(context, Mockito.times(3)).saveMeasure(Mockito.any(Resource.class), Mockito.any(Measure.class));
 
     ArgumentCaptor<Measure> captor = ArgumentCaptor.forClass(Measure.class);

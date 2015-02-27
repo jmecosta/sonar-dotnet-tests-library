@@ -87,4 +87,9 @@ public class VisualStudioCoverageXmlReportParserTest {
         MapAssert.entry(34, 0));
   }
 
+  @Test
+  public void should_not_fail_with_invalid_path() {
+    new VisualStudioCoverageXmlReportParser().parse(new File("src/test/resources/visualstudio_coverage_xml/invalid_path.coveragexml"), mock(Coverage.class));
+  }
+
 }

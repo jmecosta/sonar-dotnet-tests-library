@@ -19,7 +19,6 @@
  */
 package org.sonar.plugins.dotnet.tests;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,7 +86,8 @@ public class OpenCoverReportParser implements CoverageParser {
       try {
         files.put(uid, new File(fullPath).getCanonicalPath());
       } catch (IOException e) {
-        LOG.error("Cannot Get Canonical Path for " + fullPath + " with uid: " + uid + " : ignore measures");
+        LOG.debug("Skipping the import of OpenCover code coverage for the invalid file path: " + fullPath
+          + " at line " + xmlParserHelper.stream().getLocation().getLineNumber(), e);
       }
     }
 

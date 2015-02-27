@@ -28,37 +28,37 @@ import java.io.File;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-public class VisualStudioTestResultsFileParserTest {
+public class NUnitTestResultsFileParserTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void no_counters() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("The mandatory <Counters> tag is missing in ");
-    thrown.expectMessage(new File("src/test/resources/visualstudio_test_results/no_counters.trx").getAbsolutePath());
-    new VisualStudioTestResultsFileParser().parse(new File("src/test/resources/visualstudio_test_results/no_counters.trx"), mock(UnitTestResults.class));
+    thrown.expect(ParseErrorException.class);
+    thrown.expectMessage("Missing attribute \"total\" in element <test-results> in ");
+    thrown.expectMessage(new File("src/test/resources/nunit/no_counters.xml").getAbsolutePath());
+    new NUnitTestResultsFileParser().parse(new File("src/test/resources/nunit/no_counters.xml"), mock(UnitTestResults.class));
   }
 
   @Test
   public void wrong_passed_number() {
     thrown.expect(ParseErrorException.class);
-    thrown.expectMessage("Expected an integer instead of \"foo\" for the attribute \"passed\" in ");
-    thrown.expectMessage(new File("src/test/resources/visualstudio_test_results/wrong_passed_number.trx").getAbsolutePath());
-    new VisualStudioTestResultsFileParser().parse(new File("src/test/resources/visualstudio_test_results/wrong_passed_number.trx"), mock(UnitTestResults.class));
+    thrown.expectMessage("Expected an integer instead of \"invalid\" for the attribute \"total\" in ");
+    thrown.expectMessage(new File("src/test/resources/nunit/invalid_total.xml").getAbsolutePath());
+    new NUnitTestResultsFileParser().parse(new File("src/test/resources/nunit/invalid_total.xml"), mock(UnitTestResults.class));
   }
 
   @Test
   public void valid() throws Exception {
     UnitTestResults results = new UnitTestResults();
-    new VisualStudioTestResultsFileParser().parse(new File("src/test/resources/visualstudio_test_results/valid.trx"), results);
+    new NUnitTestResultsFileParser().parse(new File("src/test/resources/nunit/valid.xml"), results);
 
-    assertThat(results.tests()).isEqualTo(31);
-    assertThat(results.passedPercentage()).isEqualTo(14 * 100.0 / 31);
-    assertThat(results.skipped()).isEqualTo(11);
-    assertThat(results.failures()).isEqualTo(14);
-    assertThat(results.errors()).isEqualTo(3);
+    assertThat(results.tests()).isEqualTo(196);
+    assertThat(results.passedPercentage()).isEqualTo(146 * 100.0 / 196);
+    assertThat(results.skipped()).isEqualTo(7);
+    assertThat(results.failures()).isEqualTo(20);
+    assertThat(results.errors()).isEqualTo(30);
   }
 
 }

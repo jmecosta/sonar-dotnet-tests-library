@@ -78,4 +78,9 @@ public class DotCoverReportParserTest {
         MapAssert.entry(34, 0));
   }
 
+  @Test
+  public void should_not_fail_with_invalid_path() {
+    new DotCoverReportParser().parse(new File("src/test/resources/dotcover/invalid_path.html"), mock(Coverage.class));
+  }
+
 }

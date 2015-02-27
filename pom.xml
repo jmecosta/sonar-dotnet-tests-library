@@ -10,7 +10,7 @@
 
   <groupId>org.codehaus.sonar.dotnet.tests</groupId>
   <artifactId>sonar-dotnet-tests-library</artifactId>
-  <version>1.2-SNAPSHOT</version>
+  <version>1.3-SNAPSHOT</version>
 
   <name>SonarQube .NET Tests Library</name>
   <description />
@@ -114,8 +114,8 @@
             <configuration>
               <rules>
                 <requireFilesSize>
-                  <maxsize>40000</maxsize>
-                  <minsize>30000</minsize>
+                  <maxsize>45000</maxsize>
+                  <minsize>35000</minsize>
                   <files>
                     <file>${project.build.directory}/${project.build.finalName}.jar</file>
                   </files>

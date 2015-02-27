@@ -28,19 +28,18 @@ import org.sonar.api.measures.CoverageMeasuresBuilder;
 import org.sonar.api.measures.Measure;
 import org.sonar.api.resources.Project;
 
+import java.io.File;
 import java.util.Map;
-import org.apache.tools.ant.DirectoryScanner;
 
 public class CoverageReportImportSensor implements Sensor {
 
   private static final Logger LOG = LoggerFactory.getLogger(CoverageReportImportSensor.class);
 
+  private final WildcardPatternFileProvider wildcardPatternFileProvider = new WildcardPatternFileProvider(new File("."), File.separator);
   private final CoverageConfiguration coverageConf;
   private final CoverageAggregator coverageAggregator;
-  private final DirectoryScanner scanner;
 
   public CoverageReportImportSensor(CoverageConfiguration coverageConf, CoverageAggregator coverageAggregator) {
-    this.scanner = new DirectoryScanner();
     this.coverageConf = coverageConf;
     this.coverageAggregator = coverageAggregator;
   }
@@ -57,8 +56,7 @@ public class CoverageReportImportSensor implements Sensor {
 
   @VisibleForTesting
   void analyze(SensorContext context, FileProvider fileProvider, Coverage coverage) {
-        
-    coverageAggregator.aggregate(coverage, this.scanner);
+    coverageAggregator.aggregate(wildcardPatternFileProvider, coverage);
     CoverageMeasuresBuilder coverageMeasureBuilder = CoverageMeasuresBuilder.create();
 
     for (String filePath : coverage.files()) {

@@ -31,38 +31,51 @@ public class UnitTestResultsAggregator implements BatchExtension {
   private final UnitTestConfiguration unitTestConf;
   private final Settings settings;
   private final VisualStudioTestResultsFileParser visualStudioTestResultsFileParser;
+  private final NUnitTestResultsFileParser nunitTestResultsFileParser;
 
   public UnitTestResultsAggregator(UnitTestConfiguration unitTestConf, Settings settings) {
-    this(unitTestConf, settings, new VisualStudioTestResultsFileParser());
+    this(unitTestConf, settings, new VisualStudioTestResultsFileParser(), new NUnitTestResultsFileParser());
   }
 
   @VisibleForTesting
   public UnitTestResultsAggregator(UnitTestConfiguration unitTestConf, Settings settings,
-    VisualStudioTestResultsFileParser visualStudioTestResultsFileParser) {
+    VisualStudioTestResultsFileParser visualStudioTestResultsFileParser,
+    NUnitTestResultsFileParser nunitTestResultsFileParser) {
     this.unitTestConf = unitTestConf;
     this.settings = settings;
     this.visualStudioTestResultsFileParser = visualStudioTestResultsFileParser;
+    this.nunitTestResultsFileParser = nunitTestResultsFileParser;
   }
 
   public boolean hasUnitTestResultsProperty() {
-    return hasVisualStudioTestResultsFile();
+    return hasVisualStudioTestResultsFile() || hasNUnitTestResultsFile();
   }
 
   private boolean hasVisualStudioTestResultsFile() {
     return settings.hasKey(unitTestConf.visualStudioTestResultsFilePropertyKey());
   }
 
-  public UnitTestResults aggregate(UnitTestResults unitTestResults) {
+  private boolean hasNUnitTestResultsFile() {
+    return settings.hasKey(unitTestConf.nunitTestResultsFilePropertyKey());
+  }
+
+  public UnitTestResults aggregate(WildcardPatternFileProvider wildcardPatternFileProvider, UnitTestResults unitTestResults) {
     if (hasVisualStudioTestResultsFile()) {
-      aggregate(settings.getString(unitTestConf.visualStudioTestResultsFilePropertyKey()), visualStudioTestResultsFileParser, unitTestResults);
+      aggregate(wildcardPatternFileProvider, settings.getString(unitTestConf.visualStudioTestResultsFilePropertyKey()), visualStudioTestResultsFileParser, unitTestResults);
+    }
+
+    if (hasNUnitTestResultsFile()) {
+      aggregate(wildcardPatternFileProvider, settings.getString(unitTestConf.nunitTestResultsFilePropertyKey()), nunitTestResultsFileParser, unitTestResults);
     }
 
     return unitTestResults;
   }
 
-  private static void aggregate(String reportPaths, VisualStudioTestResultsFileParser parser, UnitTestResults unitTestResults) {
-    for (String reportPath : Splitter.on(',').trimResults().omitEmptyStrings().split(reportPaths)) {
-      parser.parse(new File(reportPath), unitTestResults);
+  private void aggregate(WildcardPatternFileProvider wildcardPatternFileProvider, String reportPaths, UnitTestResultsParser parser, UnitTestResults unitTestResults) {
+    for (String reportPathPattern : Splitter.on(',').trimResults().omitEmptyStrings().split(reportPaths)) {
+      for (File reportFile : wildcardPatternFileProvider.listFiles(reportPathPattern)) {
+        parser.parse(reportFile, unitTestResults);
+      }
     }
   }
 

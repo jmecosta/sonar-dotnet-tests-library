@@ -89,4 +89,9 @@ public class NCover3ReportParserTest {
         MapAssert.entry(37, 2));
   }
 
+  @Test
+  public void should_not_fail_with_invalid_path() {
+    new NCover3ReportParser().parse(new File("src/test/resources/ncover3/invalid_path.nccov"), mock(Coverage.class));
+  }
+
 }

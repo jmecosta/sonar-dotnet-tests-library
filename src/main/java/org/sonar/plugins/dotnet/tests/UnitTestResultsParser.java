@@ -19,40 +19,10 @@
  */
 package org.sonar.plugins.dotnet.tests;
 
-public class UnitTestResults {
+import java.io.File;
 
-  private int tests;
-  private int passed;
-  private int skipped;
-  private int failures;
-  private int errors;
+public interface UnitTestResultsParser {
 
-  public void add(int tests, int passed, int skipped, int failures, int errors) {
-    this.tests += tests;
-    this.passed += passed;
-    this.skipped += skipped;
-    this.failures += failures;
-    this.errors += errors;
-  }
-
-  public double tests() {
-    return tests;
-  }
-
-  public double passedPercentage() {
-    return passed * 100.0 / tests();
-  }
-
-  public double skipped() {
-    return skipped;
-  }
-
-  public double failures() {
-    return failures;
-  }
-
-  public double errors() {
-    return errors;
-  }
+  void parse(File file, UnitTestResults unitTestResults);
 
 }

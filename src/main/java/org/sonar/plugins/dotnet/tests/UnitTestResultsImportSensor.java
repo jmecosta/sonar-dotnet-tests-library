@@ -25,8 +25,11 @@ import org.sonar.api.batch.SensorContext;
 import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.resources.Project;
 
+import java.io.File;
+
 public class UnitTestResultsImportSensor implements Sensor {
 
+  private final WildcardPatternFileProvider wildcardPatternFileProvider = new WildcardPatternFileProvider(new File("."), File.separator);
   private final UnitTestResultsAggregator unitTestResultsAggregator;
 
   public UnitTestResultsImportSensor(UnitTestResultsAggregator unitTestResultsAggregator) {
@@ -40,18 +43,23 @@ public class UnitTestResultsImportSensor implements Sensor {
 
   @Override
   public void analyse(Project project, SensorContext context) {
-    analyze(context, new UnitTestResults());
+    if (project.isRoot()) {
+      analyze(context, new UnitTestResults());
+    }
   }
 
   @VisibleForTesting
   void analyze(SensorContext context, UnitTestResults unitTestResults) {
-    unitTestResultsAggregator.aggregate(unitTestResults);
+    UnitTestResults aggregatedResults = unitTestResultsAggregator.aggregate(wildcardPatternFileProvider, unitTestResults);
 
-    context.saveMeasure(CoreMetrics.TESTS, unitTestResults.tests());
-    context.saveMeasure(CoreMetrics.TEST_SUCCESS_DENSITY, unitTestResults.passedPercentage());
-    context.saveMeasure(CoreMetrics.TEST_ERRORS, unitTestResults.errors());
-    context.saveMeasure(CoreMetrics.TEST_FAILURES, unitTestResults.failed());
-    context.saveMeasure(CoreMetrics.SKIPPED_TESTS, unitTestResults.skipped());
+    context.saveMeasure(CoreMetrics.TESTS, aggregatedResults.tests());
+    context.saveMeasure(CoreMetrics.TEST_ERRORS, aggregatedResults.errors());
+    context.saveMeasure(CoreMetrics.TEST_FAILURES, aggregatedResults.failures());
+    context.saveMeasure(CoreMetrics.SKIPPED_TESTS, aggregatedResults.skipped());
+
+    if (aggregatedResults.tests() > 0) {
+      context.saveMeasure(CoreMetrics.TEST_SUCCESS_DENSITY, aggregatedResults.passedPercentage());
+    }
   }
 
 }

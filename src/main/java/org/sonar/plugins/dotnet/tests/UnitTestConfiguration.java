@@ -22,13 +22,19 @@ package org.sonar.plugins.dotnet.tests;
 public class UnitTestConfiguration {
 
   private final String visualStudioTestResultsFilePropertyKey;
+  private final String nunitTestResultsFilePropertyKey;
 
-  public UnitTestConfiguration(String visualStudioTestResultsFilePropertyKey) {
+  public UnitTestConfiguration(String visualStudioTestResultsFilePropertyKey, String nunitTestResultsFilePropertyKey) {
     this.visualStudioTestResultsFilePropertyKey = visualStudioTestResultsFilePropertyKey;
+    this.nunitTestResultsFilePropertyKey = nunitTestResultsFilePropertyKey;
   }
 
   public String visualStudioTestResultsFilePropertyKey() {
     return visualStudioTestResultsFilePropertyKey;
+  }
+
+  public String nunitTestResultsFilePropertyKey() {
+    return nunitTestResultsFilePropertyKey;
   }
 
 }

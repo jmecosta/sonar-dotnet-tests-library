@@ -19,40 +19,23 @@
  */
 package org.sonar.plugins.dotnet.tests;
 
-public class UnitTestResults {
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
-  private int tests;
-  private int passed;
-  private int skipped;
-  private int failures;
-  private int errors;
+import java.io.File;
 
-  public void add(int tests, int passed, int skipped, int failures, int errors) {
-    this.tests += tests;
-    this.passed += passed;
-    this.skipped += skipped;
-    this.failures += failures;
-    this.errors += errors;
-  }
+public class XmlParserHelperTest {
 
-  public double tests() {
-    return tests;
-  }
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
-  public double passedPercentage() {
-    return passed * 100.0 / tests();
-  }
+  @Test
+  public void invalid_prolog() {
+    thrown.expectMessage("Error while parsing the XML file: ");
+    thrown.expectMessage("invalid_prolog.txt");
 
-  public double skipped() {
-    return skipped;
-  }
-
-  public double failures() {
-    return failures;
-  }
-
-  public double errors() {
-    return errors;
+    new XmlParserHelper(new File("src/test/resources/xml_parser_helper/invalid_prolog.txt")).nextTag();
   }
 
 }

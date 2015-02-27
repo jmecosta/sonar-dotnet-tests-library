@@ -26,6 +26,8 @@ import com.google.common.io.Files;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
@@ -66,9 +68,12 @@ public class DotCoverReportParser implements CoverageParser {
       }
 
       String fileCanonicalPath = extractFileCanonicalPath(contents);
-      collectCoverage(fileCanonicalPath, contents);
+      if (fileCanonicalPath != null) {
+        collectCoverage(fileCanonicalPath, contents);
+      }
     }
 
+    @Nullable
     private static String extractFileCanonicalPath(String contents) {
       Matcher matcher = TITLE_PATTERN.matcher(contents);
       checkMatches(matcher);
@@ -78,7 +83,8 @@ public class DotCoverReportParser implements CoverageParser {
       try {
         return new File(lowerCaseAbsolutePath).getCanonicalPath();
       } catch (IOException e) {
-        throw Throwables.propagate(e);
+        LOG.debug("Skipping the import of dotCover code coverage for the invalid file path: " + lowerCaseAbsolutePath, e);
+        return null;
       }
     }
 

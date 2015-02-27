@@ -19,7 +19,6 @@
  */
 package org.sonar.plugins.dotnet.tests;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import org.slf4j.Logger;
@@ -104,7 +103,9 @@ public class VisualStudioCoverageXmlReportParser implements CoverageParser {
       try {
         canonicalPath = new File(path).getCanonicalPath();
       } catch (IOException e) {
-        throw Throwables.propagate(e);
+        LOG.debug("Skipping the import of Visual Studio XML code coverage for the invalid file path: " + path
+          + " at line " + xmlParserHelper.stream().getLocation().getLineNumber(), e);
+        return;
       }
 
       for (Integer line : coveredLines.get(id)) {

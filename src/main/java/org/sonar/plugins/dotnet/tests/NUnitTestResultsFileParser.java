@@ -19,19 +19,18 @@
  */
 package org.sonar.plugins.dotnet.tests;
 
-import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
-public class VisualStudioTestResultsFileParser implements UnitTestResultsParser {
+public class NUnitTestResultsFileParser implements UnitTestResultsParser {
 
-  private static final Logger LOG = LoggerFactory.getLogger(VisualStudioTestResultsFileParser.class);
+  private static final Logger LOG = LoggerFactory.getLogger(NUnitTestResultsFileParser.class);
 
   @Override
   public void parse(File file, UnitTestResults unitTestResults) {
-    LOG.info("Parsing the Visual Studio Test Results file " + file.getAbsolutePath());
+    LOG.info("Parsing the NUnit Test Results file " + file.getAbsolutePath());
     new Parser(file, unitTestResults).parse();
   }
 
@@ -40,8 +39,6 @@ public class VisualStudioTestResultsFileParser implements UnitTestResultsParser 
     private final File file;
     private XmlParserHelper xmlParserHelper;
     private final UnitTestResults unitTestResults;
-
-    private boolean foundCounters;
 
     public Parser(File file, UnitTestResults unitTestResults) {
       this.file = file;
@@ -52,8 +49,7 @@ public class VisualStudioTestResultsFileParser implements UnitTestResultsParser 
       try {
         xmlParserHelper = new XmlParserHelper(file);
         checkRootTag();
-        dispatchTags();
-        Preconditions.checkArgument(foundCounters, "The mandatory <Counters> tag is missing in " + file.getAbsolutePath());
+        handleTestResultsTag();
       } finally {
         if (xmlParserHelper != null) {
           xmlParserHelper.close();
@@ -61,37 +57,23 @@ public class VisualStudioTestResultsFileParser implements UnitTestResultsParser 
       }
     }
 
-    private void dispatchTags() {
-      String tagName;
-      while ((tagName = xmlParserHelper.nextTag()) != null) {
-        if ("Counters".equals(tagName)) {
-          handleCountersTag();
-        }
-      }
+    private void checkRootTag() {
+      xmlParserHelper.checkRootTag("test-results");
     }
 
-    private void handleCountersTag() {
-      foundCounters = true;
-
-      int passed = xmlParserHelper.getRequiredIntAttribute("passed");
-      int failed = xmlParserHelper.getRequiredIntAttribute("failed");
-      int errors = xmlParserHelper.getRequiredIntAttribute("error");
-      int timeout = xmlParserHelper.getRequiredIntAttribute("timeout");
-      int aborted = xmlParserHelper.getRequiredIntAttribute("aborted");
-
+    private void handleTestResultsTag() {
+      int total = xmlParserHelper.getRequiredIntAttribute("total");
+      int errors = xmlParserHelper.getRequiredIntAttribute("errors");
+      int failures = xmlParserHelper.getRequiredIntAttribute("failures");
       int inconclusive = xmlParserHelper.getRequiredIntAttribute("inconclusive");
+      int ignored = xmlParserHelper.getRequiredIntAttribute("ignored");
 
-      int tests = passed + failed + errors + timeout + aborted;
-      int skipped = inconclusive;
-      int failures = timeout + failed + aborted;
+      int tests = total - inconclusive;
+      int passed = total - errors - failures - inconclusive;
+      int skipped = inconclusive + ignored;
 
       unitTestResults.add(tests, passed, skipped, failures, errors);
     }
-
-    private void checkRootTag() {
-      xmlParserHelper.checkRootTag("TestRun");
-    }
-
   }
 
 }

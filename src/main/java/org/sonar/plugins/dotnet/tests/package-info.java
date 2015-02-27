@@ -17,42 +17,8 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
+@ParametersAreNonnullByDefault
 package org.sonar.plugins.dotnet.tests;
 
-public class UnitTestResults {
+import javax.annotation.ParametersAreNonnullByDefault;
 
-  private int tests;
-  private int passed;
-  private int skipped;
-  private int failures;
-  private int errors;
-
-  public void add(int tests, int passed, int skipped, int failures, int errors) {
-    this.tests += tests;
-    this.passed += passed;
-    this.skipped += skipped;
-    this.failures += failures;
-    this.errors += errors;
-  }
-
-  public double tests() {
-    return tests;
-  }
-
-  public double passedPercentage() {
-    return passed * 100.0 / tests();
-  }
-
-  public double skipped() {
-    return skipped;
-  }
-
-  public double failures() {
-    return failures;
-  }
-
-  public double errors() {
-    return errors;
-  }
-
-}

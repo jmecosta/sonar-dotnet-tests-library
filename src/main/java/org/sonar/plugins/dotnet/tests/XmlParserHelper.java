@@ -22,6 +22,7 @@ package org.sonar.plugins.dotnet.tests;
 import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 import com.google.common.io.Closeables;
+import org.sonar.api.utils.SonarException;
 
 import javax.annotation.Nullable;
 import javax.xml.stream.XMLInputFactory;
@@ -55,15 +56,9 @@ public class XmlParserHelper {
   }
 
   public void checkRootTag(String name) {
-    int event;
+    String rootTag = nextTag();
 
-    try {
-      event = stream.nextTag();
-    } catch (XMLStreamException e) {
-      throw Throwables.propagate(e);
-    }
-
-    if (event != XMLStreamConstants.START_ELEMENT || !name.equals(stream.getLocalName())) {
+    if (!name.equals(rootTag)) {
       throw parseError("Missing root element <" + name + ">");
     }
   }
@@ -79,7 +74,7 @@ public class XmlParserHelper {
 
       return null;
     } catch (XMLStreamException e) {
-      throw Throwables.propagate(e);
+      throw new SonarException("Error while parsing the XML file: " + file.getAbsolutePath(), e);
     }
   }
 

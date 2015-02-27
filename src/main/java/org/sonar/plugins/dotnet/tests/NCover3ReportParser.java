@@ -19,7 +19,6 @@
  */
 package org.sonar.plugins.dotnet.tests;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +80,8 @@ public class NCover3ReportParser implements CoverageParser {
         try {
           documents.put(id, new File(url).getCanonicalPath());
         } catch (IOException e) {
-          throw Throwables.propagate(e);
+          LOG.debug("Skipping the import of NCover3 code coverage for the invalid file path: " + url
+            + " at line " + xmlParserHelper.stream().getLocation().getLineNumber(), e);
         }
       }
     }
