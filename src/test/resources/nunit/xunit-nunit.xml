@@ -1,0 +1,11 @@
+<test-results name="E:\BuildAgent\work\acbfa08073b131d2\BuildDrop\Test\BuildAllExtension.Test.dll" date="2015-06-29" time="15:00:30" total="1" failures="0" not-run="0">
+    <test-suite name="E:\BuildAgent\work\acbfa08073b131d2\BuildDrop\Test\BuildAllExtension.Test.dll" success="True" time="0.222">
+        <results>
+        <test-suite name="BuildAllExtension.Test.ConnectionConfigurationHelpersTests" success="True" time="0.222">
+            <results>
+            <test-case name="BuildAllExtension.Test.ConnectionConfigurationHelpersTests.GetUserConfigurationIsOkAfterAuthentication" executed="True" success="True" time="0.222"/>
+            </results>
+        </test-suite>
+        </results>
+    </test-suite>
+</test-results>

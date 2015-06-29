@@ -54,11 +54,10 @@ public class XmlParserHelper {
       throw Throwables.propagate(e);
     }
   }
-
-  public boolean isRootTagPresent(String name) {
-    String rootTag = nextTag();
-    return name.equals(rootTag);
-  }
+  
+  public boolean isAttributePresent(String name) {
+    return getAttribute(name) != null;
+  }  
   
   public void checkRootTag(String name) {
     String rootTag = nextTag();

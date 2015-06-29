@@ -56,7 +56,7 @@ public class NUnitTestResultsFileParserTest {
 
     assertThat(results.tests()).isEqualTo(196);
     assertThat(results.passedPercentage()).isEqualTo(146 * 100.0 / 196);
-    assertThat(results.skipped()).isEqualTo(7);
+    assertThat(results.skipped()).isEqualTo(2);
     assertThat(results.failures()).isEqualTo(20);
     assertThat(results.errors()).isEqualTo(30);
   }
@@ -72,5 +72,17 @@ public class NUnitTestResultsFileParserTest {
     assertThat(results.failures()).isEqualTo(0);
     assertThat(results.errors()).isEqualTo(0);
   }
+  
+  @Test
+  public void validXuniNunit() throws Exception {
+    UnitTestResults results = new UnitTestResults();
+    new NUnitTestResultsFileParser().parse(new File("src/test/resources/nunit/xunit-nunit.xml"), results);
+
+    assertThat(results.tests()).isEqualTo(1);
+    assertThat(results.passedPercentage()).isEqualTo(100);
+    assertThat(results.skipped()).isEqualTo(0);
+    assertThat(results.failures()).isEqualTo(0);
+    assertThat(results.errors()).isEqualTo(0);
+  }  
 
 }
