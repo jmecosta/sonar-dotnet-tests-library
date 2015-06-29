@@ -48,13 +48,13 @@ public class NUnitTestResultsFileParser implements UnitTestResultsParser {
     public void parse() {
       try {
         xmlParserHelper = new XmlParserHelper(file);
-        
-        if (checkRootTagNunit2()) {
-          handleTestResultsTag();
+
+        if (xmlParserHelper.isRootTagPresent("test-results")) {
+          handleTestResultsTagNunit2();
         } else {
           handleTestResultsTagNunit3();
         }
-        
+
       } finally {
         if (xmlParserHelper != null) {
           xmlParserHelper.close();
@@ -62,18 +62,7 @@ public class NUnitTestResultsFileParser implements UnitTestResultsParser {
       }
     }
 
-    private boolean checkRootTagNunit2() {
-      try
-      {
-        xmlParserHelper.checkRootTag("test-results");  
-        return true;
-      } catch(Exception ex) {
-        LOG.info("Parsing the NUnit Test Results file V2 Failed: {1}", ex.getMessage());
-        return false;
-      }      
-    }
-    
-    private void handleTestResultsTag() {
+    private void handleTestResultsTagNunit2() {
       LOG.info("Parsing the NUnit Test Results file V2: " + file.getAbsolutePath());
       int total = xmlParserHelper.getRequiredIntAttribute("total");
       int errors = xmlParserHelper.getRequiredIntAttribute("errors");
@@ -85,9 +74,9 @@ public class NUnitTestResultsFileParser implements UnitTestResultsParser {
       int passed = total - errors - failures - inconclusive;
       int skipped = inconclusive + ignored;
 
-      unitTestResults.add(tests, passed, skipped, failures, errors);        
+      unitTestResults.add(tests, passed, skipped, failures, errors);
     }
-    
+
     private void handleTestResultsTagNunit3() {
       LOG.info("Parsing the NUnit Test Results file V3: " + file.getAbsolutePath());
       int total = xmlParserHelper.getRequiredIntAttribute("total");
@@ -95,8 +84,7 @@ public class NUnitTestResultsFileParser implements UnitTestResultsParser {
       int failed = xmlParserHelper.getRequiredIntAttribute("failed");
       int skipped = xmlParserHelper.getRequiredIntAttribute("skipped");
 
-      unitTestResults.add(total, passed, skipped, failed, 0);   
-    }    
+      unitTestResults.add(total, passed, skipped, failed, 0);
+    }
   }
-
 }
