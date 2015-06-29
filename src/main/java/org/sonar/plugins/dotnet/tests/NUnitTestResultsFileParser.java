@@ -48,8 +48,9 @@ public class NUnitTestResultsFileParser implements UnitTestResultsParser {
     public void parse() {
       try {
         xmlParserHelper = new XmlParserHelper(file);
-        checkRootTag();
-        handleTestResultsTag();
+
+        xmlParserHelper.nextTag();
+        handleTestResultsTags();
       } finally {
         if (xmlParserHelper != null) {
           xmlParserHelper.close();
@@ -57,23 +58,60 @@ public class NUnitTestResultsFileParser implements UnitTestResultsParser {
       }
     }
 
-    private void checkRootTag() {
-      xmlParserHelper.checkRootTag("test-results");
-    }
+    private void handleTestResultsTags() {
+      LOG.info("Parsing the NUnit Test Results file: " + file.getAbsolutePath());
+      int total = 0;
+      int errors = 0;
+      int failures = 0;
+      int inconclusive = 0;
+      int ignored = 0;
+      int passed = 0;
+      int skipped = 0;
 
-    private void handleTestResultsTag() {
-      int total = xmlParserHelper.getRequiredIntAttribute("total");
-      int errors = xmlParserHelper.getRequiredIntAttribute("errors");
-      int failures = xmlParserHelper.getRequiredIntAttribute("failures");
-      int inconclusive = xmlParserHelper.getRequiredIntAttribute("inconclusive");
-      int ignored = xmlParserHelper.getRequiredIntAttribute("ignored");
+      total = xmlParserHelper.getRequiredIntAttribute("total");
+
+      if(xmlParserHelper.isAttributePresent("failures")) {
+        failures = xmlParserHelper.getRequiredIntAttribute("failures");
+      } else {
+        if(xmlParserHelper.isAttributePresent("failed")) {
+          failures = xmlParserHelper.getRequiredIntAttribute("failed");
+        }
+      }
+
+      if(xmlParserHelper.isAttributePresent("inconclusive")) {
+        inconclusive = xmlParserHelper.getRequiredIntAttribute("inconclusive");
+      }
+
+      if(xmlParserHelper.isAttributePresent("errors")) {
+        errors = xmlParserHelper.getRequiredIntAttribute("errors");
+      }
+
+      if(xmlParserHelper.isAttributePresent("ignored")) {
+        ignored = xmlParserHelper.getRequiredIntAttribute("ignored");
+      } else {
+        if(xmlParserHelper.isAttributePresent("not-run")) {
+          ignored = xmlParserHelper.getRequiredIntAttribute("not-run");
+        }
+      }
+
+      if(xmlParserHelper.isAttributePresent("skipped")) {
+        skipped = xmlParserHelper.getRequiredIntAttribute("skipped");
+      }
+
+      if(xmlParserHelper.isAttributePresent("errors")) {
+        errors = xmlParserHelper.getRequiredIntAttribute("errors");
+      }
 
       int tests = total - inconclusive;
-      int passed = total - errors - failures - inconclusive;
-      int skipped = inconclusive + ignored;
+      if (passed == 0) {
+        passed = total - errors - failures - inconclusive;
+      }
+      
+      if (skipped == 0) {
+        skipped = inconclusive + ignored;
+      }
 
       unitTestResults.add(tests, passed, skipped, failures, errors);
     }
   }
-
 }
