@@ -62,17 +62,29 @@ public class NUnitTestResultsFileParser implements UnitTestResultsParser {
     }
 
     private void handleTestResultsTag() {
-      int total = xmlParserHelper.getRequiredIntAttribute("total");
-      int errors = xmlParserHelper.getRequiredIntAttribute("errors");
-      int failures = xmlParserHelper.getRequiredIntAttribute("failures");
-      int inconclusive = xmlParserHelper.getRequiredIntAttribute("inconclusive");
-      int ignored = xmlParserHelper.getRequiredIntAttribute("ignored");
+      try
+      {
+        LOG.info("Parsing the NUnit Test Results file V2: " + file.getAbsolutePath());
+        int total = xmlParserHelper.getRequiredIntAttribute("total");
+        int errors = xmlParserHelper.getRequiredIntAttribute("errors");
+        int failures = xmlParserHelper.getRequiredIntAttribute("failures");
+        int inconclusive = xmlParserHelper.getRequiredIntAttribute("inconclusive");
+        int ignored = xmlParserHelper.getRequiredIntAttribute("ignored");
 
-      int tests = total - inconclusive;
-      int passed = total - errors - failures - inconclusive;
-      int skipped = inconclusive + ignored;
+        int tests = total - inconclusive;
+        int passed = total - errors - failures - inconclusive;
+        int skipped = inconclusive + ignored;
 
-      unitTestResults.add(tests, passed, skipped, failures, errors);
+        unitTestResults.add(tests, passed, skipped, failures, errors);        
+      }catch(Exception ex)
+      {
+        LOG.info("Parsing the NUnit Test Results file V3: " + file.getAbsolutePath());
+        int total = xmlParserHelper.getRequiredIntAttribute("total");
+        int failures = xmlParserHelper.getRequiredIntAttribute("failures");
+        int ignored = xmlParserHelper.getRequiredIntAttribute("not-run");
+
+        unitTestResults.add(total, total - failures, ignored, failures, 0);   
+      }
     }
   }
 

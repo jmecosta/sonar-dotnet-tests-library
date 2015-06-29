@@ -26,9 +26,11 @@ import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.resources.Project;
 
 import java.io.File;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UnitTestResultsImportSensor implements Sensor {
-
+  private static final Logger LOG = LoggerFactory.getLogger(NUnitTestResultsFileParser.class);
   private final WildcardPatternFileProvider wildcardPatternFileProvider = new WildcardPatternFileProvider(new File("."), File.separator);
   private final UnitTestResultsAggregator unitTestResultsAggregator;
 
@@ -50,6 +52,9 @@ public class UnitTestResultsImportSensor implements Sensor {
 
   @VisibleForTesting
   void analyze(SensorContext context, UnitTestResults unitTestResults) {
+    
+    LOG.debug("Analysis Tests Results");
+    
     UnitTestResults aggregatedResults = unitTestResultsAggregator.aggregate(wildcardPatternFileProvider, unitTestResults);
 
     context.saveMeasure(CoreMetrics.TESTS, aggregatedResults.tests());
