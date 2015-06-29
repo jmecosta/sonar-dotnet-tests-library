@@ -28,6 +28,7 @@ import org.sonar.api.resources.Project;
 import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.api.utils.SonarException;
 
 public class UnitTestResultsImportSensor implements Sensor {
   private static final Logger LOG = LoggerFactory.getLogger(NUnitTestResultsFileParser.class);
@@ -52,11 +53,11 @@ public class UnitTestResultsImportSensor implements Sensor {
 
   @VisibleForTesting
   void analyze(SensorContext context, UnitTestResults unitTestResults) {
-    
-    LOG.debug("Analysis Tests Results");
-    
-    UnitTestResults aggregatedResults = unitTestResultsAggregator.aggregate(wildcardPatternFileProvider, unitTestResults);
 
+    try
+    {
+    UnitTestResults aggregatedResults = unitTestResultsAggregator.aggregate(wildcardPatternFileProvider, unitTestResults);
+    
     context.saveMeasure(CoreMetrics.TESTS, aggregatedResults.tests());
     context.saveMeasure(CoreMetrics.TEST_ERRORS, aggregatedResults.errors());
     context.saveMeasure(CoreMetrics.TEST_FAILURES, aggregatedResults.failures());
@@ -65,6 +66,8 @@ public class UnitTestResultsImportSensor implements Sensor {
     if (aggregatedResults.tests() > 0) {
       context.saveMeasure(CoreMetrics.TEST_SUCCESS_DENSITY, aggregatedResults.passedPercentage());
     }
+    } catch (SonarException ex) {
+      LOG.error("Test Metrics already saved: {0}", ex.getMessage());
+    }
   }
-
 }
