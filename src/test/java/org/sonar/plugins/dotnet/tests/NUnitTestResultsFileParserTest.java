@@ -60,5 +60,17 @@ public class NUnitTestResultsFileParserTest {
     assertThat(results.failures()).isEqualTo(20);
     assertThat(results.errors()).isEqualTo(30);
   }
+  
+  @Test
+  public void validNunit3() throws Exception {
+    UnitTestResults results = new UnitTestResults();
+    new NUnitTestResultsFileParser().parse(new File("src/test/resources/nunit/valid-nunit3.xml"), results);
+
+    assertThat(results.tests()).isEqualTo(19);
+    assertThat(results.passedPercentage()).isEqualTo(100);
+    assertThat(results.skipped()).isEqualTo(0);
+    assertThat(results.failures()).isEqualTo(0);
+    assertThat(results.errors()).isEqualTo(0);
+  }
 
 }
