@@ -1,7 +1,7 @@
 /*
  * SonarQube .NET Tests Library
  * Copyright (C) 2014 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,12 +25,14 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.sonar.api.batch.SensorContext;
+import org.sonar.api.batch.fs.FileSystem;
+import org.sonar.api.batch.fs.InputFile;
+import org.sonar.api.batch.fs.internal.DefaultFileSystem;
+import org.sonar.api.batch.fs.internal.DefaultInputFile;
 import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.measures.Measure;
 import org.sonar.api.measures.Metric;
-import org.sonar.api.resources.Language;
 import org.sonar.api.resources.Project;
-import org.sonar.api.resources.Resource;
 
 import java.util.List;
 
@@ -49,10 +51,10 @@ public class CoverageReportImportSensorTest {
     CoverageAggregator coverageAggregator = mock(CoverageAggregator.class);
 
     when(coverageAggregator.hasCoverageProperty()).thenReturn(true);
-    assertThat(new CoverageReportImportSensor(coverageConf, coverageAggregator).shouldExecuteOnProject(project)).isTrue();
+    assertThat(new CoverageReportImportSensor(coverageConf, coverageAggregator, mock(FileSystem.class)).shouldExecuteOnProject(project)).isTrue();
 
     when(coverageAggregator.hasCoverageProperty()).thenReturn(false);
-    assertThat(new CoverageReportImportSensor(coverageConf, coverageAggregator).shouldExecuteOnProject(project)).isFalse();
+    assertThat(new CoverageReportImportSensor(coverageConf, coverageAggregator, mock(FileSystem.class)).shouldExecuteOnProject(project)).isFalse();
   }
 
   @Test
@@ -74,24 +76,20 @@ public class CoverageReportImportSensorTest {
 
     SensorContext context = mock(SensorContext.class);
 
-    FileProvider fileProvider = mock(FileProvider.class);
-
-    org.sonar.api.resources.File csSonarFile = mockSonarFile("cs");
-    org.sonar.api.resources.File javaSonarFile = mockSonarFile("java");
-
-    when(fileProvider.fromPath("Foo.cs")).thenReturn(csSonarFile);
-    when(fileProvider.fromPath("Bar.cs")).thenReturn(null);
-    when(fileProvider.fromPath("Baz.java")).thenReturn(javaSonarFile);
+    DefaultFileSystem fs = new DefaultFileSystem();
+    InputFile inputFile = new DefaultInputFile("Foo.cs").setAbsolutePath("Foo.cs").setLanguage("cs");
+    fs.add(inputFile);
+    fs.add(new DefaultInputFile("Baz.java").setAbsolutePath("Baz.java").setLanguage("java"));
 
     CoverageConfiguration coverageConf = new CoverageConfiguration("cs", "", "", "", "");
 
-    new CoverageReportImportSensor(coverageConf, coverageAggregator).analyze(context, fileProvider, coverage);
+    new CoverageReportImportSensor(coverageConf, coverageAggregator, fs).analyze(context, coverage);
 
     verify(coverageAggregator).aggregate(Mockito.any(WildcardPatternFileProvider.class), Mockito.eq(coverage));
-    verify(context, Mockito.times(3)).saveMeasure(Mockito.any(Resource.class), Mockito.any(Measure.class));
+    verify(context, Mockito.times(3)).saveMeasure(Mockito.any(InputFile.class), Mockito.any(Measure.class));
 
     ArgumentCaptor<Measure> captor = ArgumentCaptor.forClass(Measure.class);
-    verify(context, Mockito.times(3)).saveMeasure(Mockito.eq(csSonarFile), captor.capture());
+    verify(context, Mockito.times(3)).saveMeasure(Mockito.eq(inputFile), captor.capture());
 
     List<Measure> values = captor.getAllValues();
     checkMeasure(values.get(0), CoreMetrics.LINES_TO_COVER, 2.0);
@@ -101,14 +99,6 @@ public class CoverageReportImportSensorTest {
   private static void checkMeasure(Measure measure, Metric metric, Double value) {
     assertThat(measure.getMetric()).isEqualTo(metric);
     assertThat(measure.getValue()).isEqualTo(value);
-  }
-
-  private static org.sonar.api.resources.File mockSonarFile(String languageKey) {
-    Language language = mock(Language.class);
-    when(language.getKey()).thenReturn(languageKey);
-    org.sonar.api.resources.File sonarFile = mock(org.sonar.api.resources.File.class);
-    when(sonarFile.getLanguage()).thenReturn(language);
-    return sonarFile;
   }
 
 }

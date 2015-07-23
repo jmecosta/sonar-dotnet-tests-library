@@ -1,7 +1,7 @@
 /*
  * SonarQube .NET Tests Library
  * Copyright (C) 2014 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -95,7 +95,7 @@ public class CoverageAggregator implements BatchExtension {
     return coverage;
   }
 
-  private void aggregate(WildcardPatternFileProvider wildcardPatternFileProvider, String reportPaths, CoverageParser parser, Coverage coverage) {
+  private static void aggregate(WildcardPatternFileProvider wildcardPatternFileProvider, String reportPaths, CoverageParser parser, Coverage coverage) {
     for (String reportPathPattern : Splitter.on(',').trimResults().omitEmptyStrings().split(reportPaths)) {
       for (File reportFile : wildcardPatternFileProvider.listFiles(reportPathPattern)) {
         parser.parse(reportFile, coverage);

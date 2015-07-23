@@ -3,12 +3,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.codehaus.sonar-plugins</groupId>
+    <groupId>org.sonarsource.sonar-plugins</groupId>
     <artifactId>parent</artifactId>
-    <version>18</version>
+    <version>22</version>
   </parent>
 
-  <groupId>org.codehaus.sonar.dotnet.tests</groupId>
+  <groupId>org.sonarsource.sonar-plugins.dotnet.tests</groupId>
   <artifactId>sonar-dotnet-tests-library</artifactId>
   <version>1.3.1-SNAPSHOT</version>
 
@@ -54,7 +54,8 @@
   </distributionManagement>
 
   <properties>
-    <sonarqube.version>3.7</sonarqube.version>
+    <bintray.package>sonar-dotnet-tests-library</bintray.package>
+    <sonarqube.version>4.5.2</sonarqube.version>
 
     <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
   </properties>
