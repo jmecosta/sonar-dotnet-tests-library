@@ -63,8 +63,9 @@ public class CoverageReportImportSensor implements Sensor {
   void analyze(SensorContext context, Coverage coverage) {
     coverageAggregator.aggregate(wildcardPatternFileProvider, coverage);
     CoverageMeasuresBuilder coverageMeasureBuilder = CoverageMeasuresBuilder.create();
-
+    
     for (String filePath : coverage.files()) {
+      LOG.debug("Analyse File: " + filePath);
       InputFile inputFile = fs.inputFile(fs.predicates().and(fs.predicates().hasType(Type.MAIN), fs.predicates().hasAbsolutePath(filePath)));
 
       if (inputFile != null) {
