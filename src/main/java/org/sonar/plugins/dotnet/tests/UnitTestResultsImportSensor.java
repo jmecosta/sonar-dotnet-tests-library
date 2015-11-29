@@ -1,7 +1,7 @@
 /*
  * SonarQube .NET Tests Library
  * Copyright (C) 2014 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -56,16 +56,16 @@ public class UnitTestResultsImportSensor implements Sensor {
 
     try
     {
-    UnitTestResults aggregatedResults = unitTestResultsAggregator.aggregate(wildcardPatternFileProvider, unitTestResults);
+      UnitTestResults aggregatedResults = unitTestResultsAggregator.aggregate(wildcardPatternFileProvider, unitTestResults);
     
-    context.saveMeasure(CoreMetrics.TESTS, aggregatedResults.tests());
-    context.saveMeasure(CoreMetrics.TEST_ERRORS, aggregatedResults.errors());
-    context.saveMeasure(CoreMetrics.TEST_FAILURES, aggregatedResults.failures());
-    context.saveMeasure(CoreMetrics.SKIPPED_TESTS, aggregatedResults.skipped());
+      context.saveMeasure(CoreMetrics.TESTS, aggregatedResults.tests());
+      context.saveMeasure(CoreMetrics.TEST_ERRORS, aggregatedResults.errors());
+      context.saveMeasure(CoreMetrics.TEST_FAILURES, aggregatedResults.failures());
+      context.saveMeasure(CoreMetrics.SKIPPED_TESTS, aggregatedResults.skipped());
 
-    if (aggregatedResults.tests() > 0) {
-      context.saveMeasure(CoreMetrics.TEST_SUCCESS_DENSITY, aggregatedResults.passedPercentage());
-    }
+      if (aggregatedResults.tests() > 0) {
+        context.saveMeasure(CoreMetrics.TEST_SUCCESS_DENSITY, aggregatedResults.passedPercentage());
+      }
     } catch (SonarException ex) {
       LOG.error("Test Metrics already saved: {0}", ex.getMessage());
     }

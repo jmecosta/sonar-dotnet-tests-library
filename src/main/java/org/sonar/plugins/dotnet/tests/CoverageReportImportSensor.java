@@ -1,7 +1,7 @@
 /*
  * SonarQube .NET Tests Library
  * Copyright (C) 2014 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.api.batch.Sensor;
 import org.sonar.api.batch.SensorContext;
+import org.sonar.api.batch.fs.FileSystem;
+import org.sonar.api.batch.fs.InputFile;
+import org.sonar.api.batch.fs.InputFile.Type;
 import org.sonar.api.measures.CoverageMeasuresBuilder;
 import org.sonar.api.measures.Measure;
 import org.sonar.api.resources.Project;
@@ -38,10 +41,12 @@ public class CoverageReportImportSensor implements Sensor {
   private final WildcardPatternFileProvider wildcardPatternFileProvider = new WildcardPatternFileProvider(new File("."), File.separator);
   private final CoverageConfiguration coverageConf;
   private final CoverageAggregator coverageAggregator;
+  private final FileSystem fs;
 
-  public CoverageReportImportSensor(CoverageConfiguration coverageConf, CoverageAggregator coverageAggregator) {
+  public CoverageReportImportSensor(CoverageConfiguration coverageConf, CoverageAggregator coverageAggregator, FileSystem fs) {
     this.coverageConf = coverageConf;
     this.coverageAggregator = coverageAggregator;
+    this.fs = fs;
   }
 
   @Override
@@ -51,26 +56,27 @@ public class CoverageReportImportSensor implements Sensor {
 
   @Override
   public void analyse(Project project, SensorContext context) {
-    analyze(context, new FileProvider(project, context), new Coverage());
+    analyze(context, new Coverage());
   }
 
   @VisibleForTesting
-  void analyze(SensorContext context, FileProvider fileProvider, Coverage coverage) {
+  void analyze(SensorContext context, Coverage coverage) {
     coverageAggregator.aggregate(wildcardPatternFileProvider, coverage);
     CoverageMeasuresBuilder coverageMeasureBuilder = CoverageMeasuresBuilder.create();
-
+    
     for (String filePath : coverage.files()) {
-      org.sonar.api.resources.File sonarFile = fileProvider.fromPath(filePath);
+      LOG.debug("Analyse File: " + filePath);
+      InputFile inputFile = fs.inputFile(fs.predicates().and(fs.predicates().hasType(Type.MAIN), fs.predicates().hasAbsolutePath(filePath)));
 
-      if (sonarFile != null) {
-        if (coverageConf.languageKey().equals(sonarFile.getLanguage().getKey())) {
+      if (inputFile != null) {
+        if (coverageConf.languageKey().equals(inputFile.language())) {
           coverageMeasureBuilder.reset();
           for (Map.Entry<Integer, Integer> entry : coverage.hits(filePath).entrySet()) {
             coverageMeasureBuilder.setHits(entry.getKey(), entry.getValue());
           }
 
           for (Measure measure : coverageMeasureBuilder.createMeasures()) {
-            context.saveMeasure(sonarFile, measure);
+            context.saveMeasure(inputFile, measure);
           }
         }
       } else {

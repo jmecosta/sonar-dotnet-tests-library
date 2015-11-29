@@ -1,7 +1,7 @@
 /*
  * SonarQube .NET Tests Library
  * Copyright (C) 2014 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -71,7 +71,7 @@ public class UnitTestResultsAggregator implements BatchExtension {
     return unitTestResults;
   }
 
-  private void aggregate(WildcardPatternFileProvider wildcardPatternFileProvider, String reportPaths, UnitTestResultsParser parser, UnitTestResults unitTestResults) {
+  private static void aggregate(WildcardPatternFileProvider wildcardPatternFileProvider, String reportPaths, UnitTestResultsParser parser, UnitTestResults unitTestResults) {
     for (String reportPathPattern : Splitter.on(',').trimResults().omitEmptyStrings().split(reportPaths)) {
       for (File reportFile : wildcardPatternFileProvider.listFiles(reportPathPattern)) {
         parser.parse(reportFile, unitTestResults);
