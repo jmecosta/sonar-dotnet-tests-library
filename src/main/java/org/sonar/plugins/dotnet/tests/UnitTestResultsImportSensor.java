@@ -67,7 +67,7 @@ public class UnitTestResultsImportSensor implements Sensor {
         context.saveMeasure(CoreMetrics.TEST_SUCCESS_DENSITY, aggregatedResults.passedPercentage());
       }
     } catch (SonarException ex) {
-      LOG.error("Test Metrics already saved: {0}", ex.getMessage());
+      LOG.error("Test Metrics already saved: '{}'", ex.getMessage());
     }
   }
 }
