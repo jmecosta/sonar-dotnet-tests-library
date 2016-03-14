@@ -1,7 +1,7 @@
 /*
  * SonarQube .NET Tests Library
- * Copyright (C) 2014 SonarSource
- * sonarqube@googlegroups.com
+ * Copyright (C) 2014-2016 SonarSource SA
+ * mailto:contact AT sonarsource DOT com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -13,41 +13,81 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.sonar.plugins.dotnet.tests;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
-
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.Set;
 
 public class Coverage {
 
-  private final Table<String, Integer, Integer> hitsByLineAndFile = HashBasedTable.create();
+  private static final int MINIMUM_FILE_LINES = 100;
+  private static final int GROW_FACTOR = 2;
+  private static final int SPECIAL_HITS_NON_EXECUTABLE = -1;
+  private final Map<String, int[]> hitsByLineAndFile = Maps.newHashMap();
 
   public void addHits(String file, int line, int hits) {
-    Integer oldHits = hitsByLineAndFile.get(file, line);
+    int[] oldHitsByLine = hitsByLineAndFile.get(file);
 
-    int newHits;
-    if (oldHits == null) {
-      newHits = hits;
-    } else {
-      newHits = hits + oldHits;
+    if (oldHitsByLine == null) {
+      oldHitsByLine = new int[Math.max(line, MINIMUM_FILE_LINES)];
+      for (int i = 0; i < oldHitsByLine.length; i++) {
+        oldHitsByLine[i] = SPECIAL_HITS_NON_EXECUTABLE;
+      }
+      hitsByLineAndFile.put(file, oldHitsByLine);
+    } else if (oldHitsByLine.length < line) {
+      int[] tmp = new int[line * GROW_FACTOR];
+      System.arraycopy(oldHitsByLine, 0, tmp, 0, oldHitsByLine.length);
+      for (int i = oldHitsByLine.length; i < tmp.length; i++) {
+        tmp[i] = SPECIAL_HITS_NON_EXECUTABLE;
+      }
+      oldHitsByLine = tmp;
+      hitsByLineAndFile.put(file, oldHitsByLine);
     }
 
-    hitsByLineAndFile.put(file, line, newHits);
+    int i = line - 1;
+    if (oldHitsByLine[i] == SPECIAL_HITS_NON_EXECUTABLE) {
+      oldHitsByLine[i] = 0;
+    }
+    oldHitsByLine[i] += hits;
   }
 
   public Set<String> files() {
-    return hitsByLineAndFile.rowKeySet();
+    return hitsByLineAndFile.keySet();
   }
 
   public Map<Integer, Integer> hits(String file) {
-    return hitsByLineAndFile.row(file);
+    int[] oldHitsByLine = hitsByLineAndFile.get(file);
+    if (oldHitsByLine == null) {
+      return ImmutableMap.of();
+    }
+
+    ImmutableMap.Builder<Integer, Integer> builder = ImmutableMap.builder();
+    for (int i = 0; i < oldHitsByLine.length; i++) {
+      if (oldHitsByLine[i] != SPECIAL_HITS_NON_EXECUTABLE) {
+        builder.put(i + 1, oldHitsByLine[i]);
+      }
+    }
+
+    return builder.build();
+  }
+
+  public void mergeWith(Coverage otherCoverage) {
+    Map<String, int[]> other = otherCoverage.hitsByLineAndFile;
+
+    for (Map.Entry<String, int[]> entry: other.entrySet()) {
+      String file = entry.getKey();
+      int[] otherHitsByLine = entry.getValue();
+
+      for (int i = otherHitsByLine.length - 1; i >= 0; i--) {
+        addHits(file, i + 1, otherHitsByLine[i]);
+      }
+    }
   }
 
 }

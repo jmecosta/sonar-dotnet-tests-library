@@ -1,7 +1,7 @@
 /*
  * SonarQube .NET Tests Library
- * Copyright (C) 2014 SonarSource
- * sonarqube@googlegroups.com
+ * Copyright (C) 2014-2016 SonarSource SA
+ * mailto:contact AT sonarsource DOT com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -13,27 +13,24 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.sonar.plugins.dotnet.tests;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 import com.google.common.io.Closeables;
-import org.sonar.api.utils.SonarException;
-
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
 import javax.annotation.Nullable;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
 
 public class XmlParserHelper {
 
@@ -78,7 +75,7 @@ public class XmlParserHelper {
 
       return null;
     } catch (XMLStreamException e) {
-      throw new SonarException("Error while parsing the XML file: " + file.getAbsolutePath(), e);
+      throw new IllegalStateException("Error while parsing the XML file: " + file.getAbsolutePath(), e);
     }
   }
 
@@ -91,7 +88,15 @@ public class XmlParserHelper {
 
   public int getRequiredIntAttribute(String name) {
     String value = getRequiredAttribute(name);
+    return tagToIntValue(name, value);
+  }
 
+  public int getIntAttributeOrZero(String name) {
+    String value = getAttribute(name);
+    return value == null ? 0 : tagToIntValue(name, value);
+  }
+
+  private int tagToIntValue(String name, String value) {
     try {
       return Integer.parseInt(value);
     } catch (NumberFormatException e) {

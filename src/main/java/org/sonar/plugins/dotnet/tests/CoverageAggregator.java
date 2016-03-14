@@ -1,7 +1,7 @@
 /*
  * SonarQube .NET Tests Library
- * Copyright (C) 2014 SonarSource
- * sonarqube@googlegroups.com
+ * Copyright (C) 2014-2016 SonarSource SA
+ * mailto:contact AT sonarsource DOT com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -13,23 +13,23 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.sonar.plugins.dotnet.tests;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
+import java.io.File;
 import org.sonar.api.BatchExtension;
 import org.sonar.api.config.Settings;
-
-import java.io.File;
 
 public class CoverageAggregator implements BatchExtension {
 
   private final CoverageConfiguration coverageConf;
   private final Settings settings;
+  private final CoverageCache coverageCache;
   private final NCover3ReportParser ncover3ReportParser;
   private final OpenCoverReportParser openCoverReportParser;
   private final DotCoverReportsAggregator dotCoverReportsAggregator;
@@ -37,11 +37,16 @@ public class CoverageAggregator implements BatchExtension {
 
   public CoverageAggregator(CoverageConfiguration coverageConf, Settings settings) {
     this(coverageConf, settings,
-      new NCover3ReportParser(), new OpenCoverReportParser(), new DotCoverReportsAggregator(new DotCoverReportParser()), new VisualStudioCoverageXmlReportParser());
+      new CoverageCache(),
+      new NCover3ReportParser(),
+      new OpenCoverReportParser(),
+      new DotCoverReportsAggregator(new DotCoverReportParser()),
+      new VisualStudioCoverageXmlReportParser());
   }
 
   @VisibleForTesting
   public CoverageAggregator(CoverageConfiguration coverageConf, Settings settings,
+    CoverageCache coverageCache,
     NCover3ReportParser ncover3ReportParser,
     OpenCoverReportParser openCoverReportParser,
     DotCoverReportsAggregator dotCoverReportsAggregator,
@@ -49,6 +54,7 @@ public class CoverageAggregator implements BatchExtension {
 
     this.coverageConf = coverageConf;
     this.settings = settings;
+    this.coverageCache = coverageCache;
     this.ncover3ReportParser = ncover3ReportParser;
     this.openCoverReportParser = openCoverReportParser;
     this.dotCoverReportsAggregator = dotCoverReportsAggregator;
@@ -95,10 +101,10 @@ public class CoverageAggregator implements BatchExtension {
     return coverage;
   }
 
-  private static void aggregate(WildcardPatternFileProvider wildcardPatternFileProvider, String reportPaths, CoverageParser parser, Coverage coverage) {
+  private void aggregate(WildcardPatternFileProvider wildcardPatternFileProvider, String reportPaths, CoverageParser parser, Coverage aggregatedCoverage) {
     for (String reportPathPattern : Splitter.on(',').trimResults().omitEmptyStrings().split(reportPaths)) {
       for (File reportFile : wildcardPatternFileProvider.listFiles(reportPathPattern)) {
-        parser.parse(reportFile, coverage);
+        aggregatedCoverage.mergeWith(coverageCache.readCoverageFromCacheOrParse(parser, reportFile));
       }
     }
   }

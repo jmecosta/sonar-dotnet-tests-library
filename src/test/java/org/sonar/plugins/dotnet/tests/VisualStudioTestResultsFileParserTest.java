@@ -1,7 +1,7 @@
 /*
  * SonarQube .NET Tests Library
- * Copyright (C) 2014 SonarSource
- * sonarqube@googlegroups.com
+ * Copyright (C) 2014-2016 SonarSource SA
+ * mailto:contact AT sonarsource DOT com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -13,17 +13,16 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.sonar.plugins.dotnet.tests;
 
+import java.io.File;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
-import java.io.File;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -59,6 +58,18 @@ public class VisualStudioTestResultsFileParserTest {
     assertThat(results.skipped()).isEqualTo(11);
     assertThat(results.failures()).isEqualTo(14);
     assertThat(results.errors()).isEqualTo(3);
+  }
+
+  @Test
+  public void valid_missing_attributes() throws Exception {
+    UnitTestResults results = new UnitTestResults();
+    new VisualStudioTestResultsFileParser().parse(new File("src/test/resources/visualstudio_test_results/valid_missing_attributes.trx"), results);
+
+    assertThat(results.tests()).isEqualTo(3);
+    assertThat(results.passedPercentage()).isEqualTo(3 * 100.0 / 3);
+    assertThat(results.skipped()).isEqualTo(0);
+    assertThat(results.failures()).isEqualTo(0);
+    assertThat(results.errors()).isEqualTo(0);
   }
 
 }

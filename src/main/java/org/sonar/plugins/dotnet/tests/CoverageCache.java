@@ -19,12 +19,29 @@
  */
 package org.sonar.plugins.dotnet.tests;
 
-public class ParseErrorException extends RuntimeException {
+import java.io.File;
+import java.util.WeakHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-  private static final long serialVersionUID = 1L;
+public class CoverageCache {
 
-  public ParseErrorException(String message) {
-    super(message);
+  private static final Logger LOG = LoggerFactory.getLogger(CoverageCache.class);
+
+  private final WeakHashMap<String, Coverage> cache = new WeakHashMap<>();
+
+  public Coverage readCoverageFromCacheOrParse(CoverageParser parser, File reportFile) {
+    String path = reportFile.getAbsolutePath();
+    Coverage coverage = cache.get(path);
+    if (coverage == null) {
+      coverage = new Coverage();
+      parser.parse(reportFile, coverage);
+      cache.put(path, coverage);
+      LOG.info("Adding this code coverage report to the cache for later reuse: " + path);
+    } else {
+      LOG.info("Successfully retrieved this code coverage report results from the cache: " + path);
+    }
+    return coverage;
   }
 
 }

@@ -19,12 +19,28 @@
  */
 package org.sonar.plugins.dotnet.tests;
 
-public class ParseErrorException extends RuntimeException {
+import java.io.File;
+import org.junit.Test;
+import org.mockito.Mockito;
 
-  private static final long serialVersionUID = 1L;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-  public ParseErrorException(String message) {
-    super(message);
+public class CoverageCacheTest {
+
+  @Test
+  public void test() {
+    CoverageCache cache = new CoverageCache();
+    CoverageParser parser = mock(CoverageParser.class);
+    File reportFile = mock(File.class);
+    when(reportFile.getAbsolutePath()).thenReturn("foo.txt");
+
+    Coverage coverage = cache.readCoverageFromCacheOrParse(parser, reportFile);
+    verify(parser, Mockito.times(1)).parse(reportFile, coverage);
+
+    cache.readCoverageFromCacheOrParse(parser, reportFile);
+    verify(parser, Mockito.times(1)).parse(Mockito.eq(reportFile), Mockito.any(Coverage.class));
   }
 
 }
