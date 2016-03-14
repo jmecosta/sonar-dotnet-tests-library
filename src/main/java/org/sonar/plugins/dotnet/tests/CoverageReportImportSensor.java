@@ -75,7 +75,14 @@ public class CoverageReportImportSensor implements Sensor {
           }
 
           for (Measure measure : coverageMeasureBuilder.createMeasures()) {
-            context.saveMeasure(inputFile, measure);
+            try
+            {
+              context.saveMeasure(inputFile, measure);
+            } catch(Exception ex) {
+              LOG.error("Saving   '{}' = '{}'", measure.getMetricKey(), measure.getValue());
+              LOG.error("       cov measure data = '{}' ", measure.getMetricKey(), measure.getData());            
+              LOG.debug("Failed to save measure for line: " + ex.getMessage());
+            }            
           }
         }
       } else {

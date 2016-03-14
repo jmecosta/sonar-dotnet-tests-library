@@ -50,7 +50,7 @@ public class NUnitTestResultsFileParser implements UnitTestResultsParser {
         xmlParserHelper = new XmlParserHelper(file);
 
         xmlParserHelper.nextTag();
-        handleTestResultsTags();
+        testresulttags();
       } finally {
         if (xmlParserHelper != null) {
           xmlParserHelper.close();
@@ -58,7 +58,7 @@ public class NUnitTestResultsFileParser implements UnitTestResultsParser {
       }
     }
 
-    private void handleTestResultsTags() {
+    private void testresulttags() {
       LOG.info("Parsing the NUnit Test Results file: " + file.getAbsolutePath());
       int total = 0;
       int errors = 0;
