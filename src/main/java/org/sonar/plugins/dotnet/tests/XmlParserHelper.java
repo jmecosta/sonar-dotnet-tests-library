@@ -52,6 +52,11 @@ public class XmlParserHelper {
     }
   }
 
+  public boolean isRootTagPresent(String name) {
+    String rootTag = nextStartTag();
+    return name.equals(rootTag);
+  }
+  
   public void checkRootTag(String name) {
     String rootTag = nextStartTag();
 

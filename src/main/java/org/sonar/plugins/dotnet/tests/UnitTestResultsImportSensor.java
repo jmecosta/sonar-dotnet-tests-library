@@ -26,8 +26,11 @@ import org.sonar.api.batch.SensorContext;
 import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.resources.Project;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.sonar.api.utils.SonarException;
 public class UnitTestResultsImportSensor implements Sensor {
-
+  private static final Logger LOG = LoggerFactory.getLogger(NUnitTestResultsFileParser.class);
   private final WildcardPatternFileProvider wildcardPatternFileProvider = new WildcardPatternFileProvider(new File("."), File.separator);
   private final UnitTestResultsAggregator unitTestResultsAggregator;
 
@@ -49,21 +52,26 @@ public class UnitTestResultsImportSensor implements Sensor {
 
   @VisibleForTesting
   void analyze(SensorContext context, UnitTestResults unitTestResults) {
-    UnitTestResults aggregatedResults = unitTestResultsAggregator.aggregate(wildcardPatternFileProvider, unitTestResults);
 
-    context.saveMeasure(CoreMetrics.TESTS, aggregatedResults.tests());
-    context.saveMeasure(CoreMetrics.TEST_ERRORS, aggregatedResults.errors());
-    context.saveMeasure(CoreMetrics.TEST_FAILURES, aggregatedResults.failures());
-    context.saveMeasure(CoreMetrics.SKIPPED_TESTS, aggregatedResults.skipped());
+    try
+    {
+      UnitTestResults aggregatedResults = unitTestResultsAggregator.aggregate(wildcardPatternFileProvider, unitTestResults);
+
+      context.saveMeasure(CoreMetrics.TESTS, aggregatedResults.tests());
+      context.saveMeasure(CoreMetrics.TEST_ERRORS, aggregatedResults.errors());
+      context.saveMeasure(CoreMetrics.TEST_FAILURES, aggregatedResults.failures());
+      context.saveMeasure(CoreMetrics.SKIPPED_TESTS, aggregatedResults.skipped());
 
     Double executionTime = aggregatedResults.executionTime();
     if (executionTime != null) {
       context.saveMeasure(CoreMetrics.TEST_EXECUTION_TIME, executionTime);
     }
 
-    if (aggregatedResults.tests() > 0) {
-      context.saveMeasure(CoreMetrics.TEST_SUCCESS_DENSITY, aggregatedResults.passedPercentage());
+      if (aggregatedResults.tests() > 0) {
+        context.saveMeasure(CoreMetrics.TEST_SUCCESS_DENSITY, aggregatedResults.passedPercentage());
+      }
+    } catch (SonarException ex) {
+      LOG.error("Test Metrics already saved: {0}", ex.getMessage());
     }
   }
-
 }

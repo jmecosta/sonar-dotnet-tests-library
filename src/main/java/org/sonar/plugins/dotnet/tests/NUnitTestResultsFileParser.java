@@ -48,8 +48,13 @@ public class NUnitTestResultsFileParser implements UnitTestResultsParser {
     public void parse() {
       try {
         xmlParserHelper = new XmlParserHelper(file);
-        checkRootTag();
-        handleTestResultsTag();
+
+        if (xmlParserHelper.isRootTagPresent("test-results")) {
+          handleTestResultsTagNunit2();
+        } else {
+          handleTestResultsTagNunit3();
+        }
+
       } finally {
         if (xmlParserHelper != null) {
           xmlParserHelper.close();
@@ -57,11 +62,8 @@ public class NUnitTestResultsFileParser implements UnitTestResultsParser {
       }
     }
 
-    private void checkRootTag() {
-      xmlParserHelper.checkRootTag("test-results");
-    }
-
-    private void handleTestResultsTag() {
+    private void handleTestResultsTagNunit2() {
+      LOG.info("Parsing the NUnit Test Results file V2: " + file.getAbsolutePath());
       int total = xmlParserHelper.getRequiredIntAttribute("total");
       int errors = xmlParserHelper.getRequiredIntAttribute("errors");
       int failures = xmlParserHelper.getRequiredIntAttribute("failures");
@@ -72,13 +74,13 @@ public class NUnitTestResultsFileParser implements UnitTestResultsParser {
       int passed = total - errors - failures - inconclusive;
       int skipped = inconclusive + ignored;
 
-      Double executionTime = readExecutionTimeFromDirectlyNestedTestSuiteTags();
+      Double executionTime = readExecutionTimeFromDirectlyNestedTestSuiteTags("time");
 
       unitTestResults.add(tests, passed, skipped, failures, errors, executionTime);
     }
 
     @CheckForNull
-    private Double readExecutionTimeFromDirectlyNestedTestSuiteTags() {
+    private Double readExecutionTimeFromDirectlyNestedTestSuiteTags(String timestr) {
       Double executionTime = null;
 
       String tag;
@@ -86,7 +88,7 @@ public class NUnitTestResultsFileParser implements UnitTestResultsParser {
       while ((tag = xmlParserHelper.nextStartOrEndTag()) != null) {
         if ("<test-suite>".equals(tag)) {
           level++;
-          Double time = xmlParserHelper.getDoubleAttribute("time");
+          Double time = xmlParserHelper.getDoubleAttribute(timestr);
 
           if (level == 1 && time != null) {
             if (executionTime == null) {
@@ -101,6 +103,16 @@ public class NUnitTestResultsFileParser implements UnitTestResultsParser {
 
       return executionTime;
     }
-  }
 
+    private void handleTestResultsTagNunit3() {
+      LOG.info("Parsing the NUnit Test Results file V3: " + file.getAbsolutePath());
+      int total = xmlParserHelper.getRequiredIntAttribute("total");
+      int passed = xmlParserHelper.getRequiredIntAttribute("passed");
+      int failed = xmlParserHelper.getRequiredIntAttribute("failed");
+      int skipped = xmlParserHelper.getRequiredIntAttribute("skipped");
+
+      Double executionTime = readExecutionTimeFromDirectlyNestedTestSuiteTags("duration");
+      unitTestResults.add(total, passed, skipped, failed, 0, executionTime);
+    }
+  }
 }
