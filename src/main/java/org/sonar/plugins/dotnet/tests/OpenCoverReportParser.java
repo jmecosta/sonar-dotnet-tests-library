@@ -86,7 +86,7 @@ public class OpenCoverReportParser implements CoverageParser {
         files.put(uid, new File(fullPath).getCanonicalPath());
       } catch (IOException e) {
         LOG.debug("Skipping the import of OpenCover code coverage for the invalid file path: " + fullPath
-          + " at line " + xmlParserHelper.stream().getLocation().getLineNumber(), e);
+          + " at line " + xmlParserHelper.stream().getLocation().getLineNumber(), e.getMessage());
       }
     }
 

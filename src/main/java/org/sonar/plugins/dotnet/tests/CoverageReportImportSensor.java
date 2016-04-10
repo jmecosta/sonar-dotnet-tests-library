@@ -66,6 +66,7 @@ public class CoverageReportImportSensor implements Sensor {
 
   @Override
   public boolean shouldExecuteOnProject(Project project) {
+    LOG.debug("CSharp coverage Cache Time: {}", this.coverageAggregator.GetTime());
     return coverageAggregator.hasCoverageProperty();
   }
 

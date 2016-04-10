@@ -34,6 +34,7 @@ public class CoverageAggregator implements BatchExtension {
   private final OpenCoverReportParser openCoverReportParser;
   private final DotCoverReportsAggregator dotCoverReportsAggregator;
   private final VisualStudioCoverageXmlReportParser visualStudioCoverageXmlReportParser;
+  private final long dateTime;
 
   public CoverageAggregator(CoverageConfiguration coverageConf, Settings settings) {
     this(coverageConf, settings,
@@ -59,8 +60,12 @@ public class CoverageAggregator implements BatchExtension {
     this.openCoverReportParser = openCoverReportParser;
     this.dotCoverReportsAggregator = dotCoverReportsAggregator;
     this.visualStudioCoverageXmlReportParser = visualStudioCoverageXmlReportParser;
+    this.dateTime = System.nanoTime();
   }
 
+  public long GetTime() {
+    return this.dateTime;
+  }
   public boolean hasCoverageProperty() {
     return hasNCover3ReportPaths() || hasOpenCoverReportPaths() || hasDotCoverReportPaths() || hasVisualStudioCoverageXmlReportPaths();
   }

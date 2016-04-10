@@ -19,8 +19,9 @@
  */
 package org.sonar.plugins.dotnet.tests;
 
+import com.google.common.collect.Maps;
 import java.io.File;
-import java.util.WeakHashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +29,7 @@ public class CoverageCache {
 
   private static final Logger LOG = LoggerFactory.getLogger(CoverageCache.class);
 
-  private final WeakHashMap<String, Coverage> cache = new WeakHashMap<>();
+  private final static Map<String, Coverage> cache = Maps.newHashMap();
 
   public Coverage readCoverageFromCacheOrParse(CoverageParser parser, File reportFile) {
     String path = reportFile.getAbsolutePath();
